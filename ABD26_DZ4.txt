@@ -1,0 +1,22 @@
+--Вставка данных
+db.test. insertMany([{name: "Омары", category: "Морепродукты",price: 3200, amount: 12},{name: "Навага", category: "Морепродукты",price: 230, amount: 31}])
+
+db.test. insertMany([{name: "Бананы", category: "Фрукты",price: 65, amount: 52},{name: "Яблоки", category: "Фрукты",price: 80, amount: 18}])
+
+db.test.aggregate( {$group: { _id: '$category', quantity: {$sum: { '$multiply': [ '$price', '$amount' ]}}}})
+
+db.test.updateMany({},{$inc:{amount:-1}})
+
+--считает произведение цены и количества. $project - добавляет в каждую запись поле total для хранения результата, но не запоминает в базу
+db.test.aggregate(
+   [
+     { $project: { name: 1, category: 1, total: { $multiply: [ "$price", "$amount" ] } } }
+   ]
+)
+
+-- вывести самый дорогой товар в каждой категории
+db.test.aggregate([
+    {$sort:{price:-1}},
+    {$group:{_id:"$category",items:{$push:{price:"$price"}}}}, 
+    {$project:{items:{$slice:["$items", 1]}}}])
+.pretty()
